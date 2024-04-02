@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  comic-frontend:
+    container_name: comic-frontend
+    image: comic-frontend
+    build:
+      context: ./comic-frontend
+      dockerfile: frontend.dockerfile
+    ports:
+      - 2222:2222
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5555
+    restart: always
+    depends_on:
+      - backend
+  backend:
+    container_name: comic-backend
+    image: comic-backend
+    build:
+      context: ./comic-backend
+      dockerfile: backend.dockerfile
+    ports:
+      - 5555:5555
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/comic?schema=public
+  db:
+    container_name: db
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: comic
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: {}
