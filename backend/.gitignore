@@ -8,7 +8,6 @@ meilisearch
 
 # env
 .env
-src/private/*
 
 # dependencies
 /node_modules
