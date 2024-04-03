@@ -3,6 +3,7 @@
 # custom
 public/*
 data.ms
+dumps
 meilisearch
 
 # env
