@@ -1,0 +1,184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/comic?schema=public"
+}
+
+enum Status {
+  In_Process
+  Completed
+  Coming_Soon
+}
+
+enum Genre {
+  Drama // sự kiện
+  Ecchi // biến thái
+  Action // hành động
+  Comedy // hài kịch
+  Fantasy // viễn tưởng, phép màu 
+  Shounen // đam mỹ
+  Adventure // phiêu lưu, mạo hiểm
+  Manhwa // Hàn Quốc
+  Manhua // Trung Quốc
+  Isekai // chuyển sinh
+  Harem // nhiều gái
+  Sci_Fi // khoa học,
+  Seinen // thanh niên 18 -> 40 tuổi
+  Horror // kinh dị, đáng sợ
+  Mystery // bí ẩn
+  Romance // lãng mạng
+  School_Life // cuộc sống học đường
+  Supernatural // siêu nhiên 
+  Detective // trinh thám
+  Martial // võ thuật
+  Swordsmanship // kiếm thuật
+}
+
+enum Role {
+  USER // thêm, sửa của bản thân
+  ADMIN // duyệt, sửa, xóa nội dung comic
+  OWNER // quản lý quyền hạn
+}
+
+model Comic {
+  id               String          @id @default(cuid())
+  name             String          @unique
+  alias            String?
+  thumbnail        String         
+  description      String
+  genre            Genre[]
+  translatorTeam   TranslatorTeam? @relation(fields: [translatorTeamId], references: [id])
+  translatorTeamId String?
+  author           Author?         @relation(fields: [authorId], references: [id])
+  authorId         String?
+  color            Boolean         @default(false)
+  verify           Boolean         @default(false)
+  createAt         DateTime        @default(now())
+  updateAt         DateTime        @updatedAt()
+  status           Status          @default(Coming_Soon)
+  views            Int             @default(0)
+  follows          Int             @default(0)
+  likes            Int             @default(0)
+  dislikes         Int             @default(0)
+  chapters         Chapter[]
+  follow           Follow[]
+  history          History[]
+  copyright        String?
+  comments         Comment[]
+}
+
+model Author {
+  id               String           @id @default(uuid())
+  roles            Role[]           @default([USER])
+  username         String           @unique
+  displayName      String
+  avatar           String?
+  banner           String?
+  createAt         DateTime         @default(now())
+  premium          Boolean          @default(false)
+  exp              Int              @default(0)
+  level            Int              @default(0)
+  translatorTeam   TranslatorTeam[]
+  follow           Follow[]
+  history          History[]
+  comic            Comic[]
+  email            String           @unique
+  password         String
+  verification     Verification?
+  verify           Boolean          @default(false)
+  changePassword   ChangePassword?
+  changePasswordId String?
+  loginCount       Int              @default(0)
+  accessToken      AccessToken[]
+  temporaryToken   TemporaryToken?
+  temporaryTokenId String?
+  comments         Comment[]
+
+  @@map("User")
+}
+
+model ChangePassword {
+  id        String   @id @default(cuid())
+  code      String
+  author    Author   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId  String   @unique
+  expiredAt DateTime
+}
+
+model Verification {
+  id        String   @id @default(cuid())
+  code      String
+  author    Author   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId  String   @unique
+  expiredAt DateTime
+}
+
+model TemporaryToken {
+  token     String   @id
+  authorId  String   @unique
+  expiredAt DateTime
+  author    Author   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model AccessToken {
+  token     String   @id
+  authorId  String
+  expiredAt DateTime
+  author    Author   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Follow {
+  id       String @id @default(cuid())
+  comicId  String
+  comic    Comic  @relation(fields: [comicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId String
+  author   Author @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model History {
+  id       String    @id @default(cuid())
+  comicId  String
+  comic    Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  chapter  Chapter[]
+  authorId String
+  author   Author    @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model TranslatorTeam {
+  id       String   @id @default(cuid())
+  members  Author[]
+  comics   Comic[]
+  createAt DateTime @default(now())
+}
+
+model Chapter {
+  id          String    @id @default(cuid())
+  comicId     String
+  comic       Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  number      Float
+  title       String
+  description String?
+  images      String[]
+  createAt    DateTime  @default(now())
+  history     History[]
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  author      Author    @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId    String
+  comic       Comic     @relation(fields: [comicId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  comicId     String
+  content     String    @db.VarChar(255)
+  createAt    DateTime  @default(now())
+  updateAt    DateTime  @updatedAt
+}

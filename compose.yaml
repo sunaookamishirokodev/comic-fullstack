@@ -5,7 +5,7 @@ services:
     container_name: comic-frontend
     image: comic-frontend
     build:
-      context: ./comic-frontend
+      context: ./frontend
       dockerfile: frontend.dockerfile
     ports:
       - 2222:2222
@@ -21,7 +21,7 @@ services:
     container_name: comic-backend
     image: comic-backend
     build:
-      context: ./comic-backend
+      context: ./backend
       dockerfile: backend.dockerfile
     ports:
       - 5555:5555
