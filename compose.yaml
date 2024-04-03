@@ -11,10 +11,13 @@ services:
       - 2222:2222
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:5555
-    restart: always
+    restart: unless-stopped
+    volumes:
+      - public:/public
     depends_on:
-      - backend
-  backend:
+      - comic-backend
+
+  comic-backend:
     container_name: comic-backend
     image: comic-backend
     build:
@@ -24,10 +27,11 @@ services:
       - 5555:5555
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/comic?schema=public
+
   db:
     container_name: db
-    image: postgres:12
-    restart: always
+    image: postgres:13
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -37,5 +41,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  search-engine:
+    container_name: search-engine
+    image: getmeili/meilisearch:v1.7
+    restart: unless-stopped
+    environment:
+      - MASTERKEY=value
+
 volumes:
   pgdata: {}
+  public: {}
