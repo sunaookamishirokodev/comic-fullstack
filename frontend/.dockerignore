@@ -1,1 +1,10 @@
 **/node_modules
+**/*.dockerfile
+**/.git
+**/.gitignore
+**/README.md
+**/.vscode
+**/.next
+**/.dockerignore
+**/LICENSE
+**/npm-debug.log

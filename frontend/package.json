@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docker-dev": "docker run -it --mount type=bind,src='$(pwd)',target=/src ubuntu bash"
   },
   "dependencies": {
     "react": "^18",
