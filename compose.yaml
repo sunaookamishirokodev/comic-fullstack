@@ -26,7 +26,7 @@ services:
     ports:
       - 5555:5555
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/comic?schema=public
+      - DATABASE_URL=postgresql://postgres:postgres@db:4321/comic?schema=public
 
   db:
     container_name: db
@@ -37,7 +37,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: comic
     ports:
-      - 5432:5432
+      - 4321:4321
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -46,8 +46,11 @@ services:
     image: getmeili/meilisearch:v1.7
     restart: unless-stopped
     environment:
-      - MASTERKEY=value
+      - MASTERKEY=
+    volumes:
+      - meili_data:/meili_data
 
 volumes:
   pgdata: {}
   public: {}
+  meili_data: {}
