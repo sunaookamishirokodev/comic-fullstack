@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+import * as argon2 from "argon2";
 import Elysia, { t } from "elysia";
 import validator from "validator";
 import ReturnData from "../../../util/format/return";
@@ -12,10 +12,16 @@ export const login = new Elysia().post(
   async ({ body: { email, password }, cookie: { accessToken } }) => {
     // validator
     if (!validator.isEmail(email)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid email" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid email",
+      });
     }
     if (!validator.isStrongPassword(password)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid password" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid password",
+      });
     }
 
     const data = await prisma.author.findUnique({
@@ -35,14 +41,21 @@ export const login = new Elysia().post(
     });
 
     if (!data) {
-      return ReturnData({ status: ResponseStatus["NOT FOUND"], message: "Email Not Found" });
+      return ReturnData({
+        status: ResponseStatus["NOT FOUND"],
+        message: "Email Not Found",
+      });
     }
 
     if (!data.verify) {
-      return ReturnData({ status: ResponseStatus["BAD REQUEST"], message: "Account is not verified", data });
+      return ReturnData({
+        status: ResponseStatus["BAD REQUEST"],
+        message: "Account is not verified",
+        data,
+      });
     }
 
-    const isCorrectPassword = await bcrypt.compare(password, data.password);
+    const isCorrectPassword = await argon2.verify(password, data.password);
 
     // handle success and fail
     if (isCorrectPassword) {
@@ -68,7 +81,7 @@ export const login = new Elysia().post(
 
       return ReturnData({
         status: ResponseStatus["OK"],
-        message: "Login account successfully",
+        message: "Successfully logged in",
         data: {
           id: data.id,
           email: data.email,
@@ -79,7 +92,10 @@ export const login = new Elysia().post(
         },
       });
     } else {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Wrong password" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Wrong password",
+      });
     }
   },
   {

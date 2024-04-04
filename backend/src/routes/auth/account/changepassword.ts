@@ -4,16 +4,28 @@ import ReturnData from "../../../util/format/return";
 import { ResponseStatus } from "../../../typings/endpoints";
 import prisma from "../../../db";
 import IsValidToken from "../../../util/check/checkToken";
-const bcrypt = require("bcrypt");
+import * as argon2 from "argon2";
 
 export const changepassword = new Elysia().patch(
   "/changepassword",
-  async ({ body: { email, oldPassword, newPassword }, cookie: { accessToken } }) => {
+  async ({
+    body: { email, oldPassword, newPassword },
+    cookie: { accessToken },
+  }) => {
     if (!validator.isEmail(email)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid email" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid email",
+      });
     }
-    if (!validator.isStrongPassword(oldPassword) || !validator.isStrongPassword(newPassword)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid password" });
+    if (
+      !validator.isStrongPassword(oldPassword) ||
+      !validator.isStrongPassword(newPassword)
+    ) {
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid password",
+      });
     }
 
     if (newPassword === oldPassword) {
@@ -37,17 +49,26 @@ export const changepassword = new Elysia().patch(
     });
 
     if (!user) {
-      return ReturnData({ status: ResponseStatus["NOT FOUND"], message: "User not found" });
+      return ReturnData({
+        status: ResponseStatus["NOT FOUND"],
+        message: "User not found",
+      });
     }
 
-    if (!user.accessToken.find((o) => o.token === accessToken.value) || !IsValidToken(accessToken.value)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid Token" });
+    if (
+      !user.accessToken.find((o: any) => o.token === accessToken.value) ||
+      !IsValidToken(accessToken.value)
+    ) {
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid Token",
+      });
     }
 
-    const isCorrectPassword = await bcrypt.compare(oldPassword, user.password);
+    const isCorrectPassword = await argon2.verify(oldPassword, user.password);
 
     if (isCorrectPassword) {
-      const encryptPassword = await bcrypt.hash(newPassword, 10);
+      const encryptPassword = await argon2.hash(newPassword);
 
       const updatePassword = await prisma.author.update({
         where: {
@@ -72,7 +93,10 @@ export const changepassword = new Elysia().patch(
         data: updatePassword,
       });
     } else {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Wrong password" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Wrong password",
+      });
     }
   },
   {

@@ -5,7 +5,13 @@ import prisma from "../../../db";
 
 export const logout = new Elysia().post(
   "/logout",
-  async ({ body: { email }, cookie: { accessToken } }) => {
+  async ({
+    body: { email },
+    cookie: { accessToken },
+  }: {
+    body: { email: string };
+    cookie: { accessToken: any };
+  }) => {
     const data = await prisma.author.findUnique({
       where: {
         email,
@@ -26,7 +32,7 @@ export const logout = new Elysia().post(
       });
     }
 
-    if (!data.accessToken.some((o) => o.token === accessToken.value)) {
+    if (!data.accessToken.some((o: any) => o.token === accessToken.value)) {
       return ReturnData({
         status: ResponseStatus["BAD REQUEST"],
         message: "Must have access token",

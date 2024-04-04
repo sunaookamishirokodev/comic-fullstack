@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+import * as argon2 from "argon2";
 import Elysia, { t } from "elysia";
 import validator from "validator";
 import ReturnData from "../../../util/format/return";
@@ -10,13 +10,22 @@ export const _delete = new Elysia().delete(
   "/delete",
   async ({ body: { email, password, id }, cookie: { accessToken } }) => {
     if (!validator.isEmail(email)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid email" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid email",
+      });
     }
     if (!validator.isStrongPassword(password)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid password" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid password",
+      });
     }
     if (!IsValidToken(accessToken.value)) {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid access token" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Invalid access token",
+      });
     }
 
     const data = await prisma.author.findUnique({
@@ -36,10 +45,13 @@ export const _delete = new Elysia().delete(
     });
 
     if (!data) {
-      return ReturnData({ status: ResponseStatus["NOT FOUND"], message: "Invalid email or access token" });
+      return ReturnData({
+        status: ResponseStatus["NOT FOUND"],
+        message: "Invalid email or access token",
+      });
     }
 
-    const isCorrectPassword = await bcrypt.compare(password, data.password);
+    const isCorrectPassword = await argon2.verify(password, data.password);
 
     if (isCorrectPassword) {
       accessToken.remove();
@@ -51,9 +63,15 @@ export const _delete = new Elysia().delete(
         },
       });
 
-      return ReturnData({ status: ResponseStatus["OK"], message: "Delete account successfully" });
+      return ReturnData({
+        status: ResponseStatus["OK"],
+        message: "Delete account successfully",
+      });
     } else {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Wrong password" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Wrong password",
+      });
     }
   },
   {
@@ -66,4 +84,4 @@ export const _delete = new Elysia().delete(
       accessToken: t.String(),
     }),
   }
-)
+);
