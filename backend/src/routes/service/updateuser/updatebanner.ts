@@ -4,8 +4,7 @@ import ReturnData from "../../../util/format/return";
 import { ResponseStatus } from "../../../typings/endpoints";
 import prisma from "../../../db";
 import IsValidToken from "../../../util/check/checkToken";
-import fs from "fs";
-import { config } from "../../../config";
+import fs from "fs/promises";
 
 export const updatebanner = new Elysia().patch(
   "/updatebanner",
@@ -37,8 +36,8 @@ export const updatebanner = new Elysia().patch(
 
     const imageName = await uploadBannerUser(banner);
 
-    if (user.author.banner) {
-      fs.unlinkSync(`./public/${user.author.banner}`);
+    if (user.author.avatar) {
+      await fs.rm(`./public/${user.author.avatar}`);
     }
 
     const updateBanner = await prisma.author.update({

@@ -1,7 +1,7 @@
-export default function IsNotExpired(expired: Date) {
+export default function isExpires(expired: Date) {
   if (expired.toISOString() > new Date().toISOString()) {
-    return true; // not
+    return false;
   } else {
-    return false; // yes
+    return true;
   }
 }

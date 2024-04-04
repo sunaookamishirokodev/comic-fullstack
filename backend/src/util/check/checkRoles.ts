@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import prisma from "../../db";
 
-export default async function IsHasRoles({ id, role }: { id: string; role: Role[] }) {
+export default async function hasRole({ id, role }: { id: string; role: Role[] }) {
   const user = await prisma.author.findUnique({
     where: {
       id,

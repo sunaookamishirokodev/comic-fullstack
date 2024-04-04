@@ -4,9 +4,7 @@ import ReturnData from "../../../util/format/return";
 import { ResponseStatus } from "../../../typings/endpoints";
 import prisma from "../../../db";
 import IsValidToken from "../../../util/check/checkToken";
-import fs from "fs";
-import { config } from "../../../config";
-import { convertUrlToPath } from "../../../util/format/convert";
+import fs from "fs/promises";
 
 export const updateavatar = new Elysia().patch(
   "/updateavatar",
@@ -51,7 +49,7 @@ export const updateavatar = new Elysia().patch(
     const imageName = await uploadAvatarUser(avatar);
 
     if (user.author.avatar) {
-      fs.rmSync(convertUrlToPath(user.author.avatar));
+      await fs.rm(`./public/${user.author.avatar}`);
     }
 
     const updateAvatar = await prisma.author.update({
