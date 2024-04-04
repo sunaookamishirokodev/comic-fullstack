@@ -8,7 +8,11 @@ import getJWT from "../../../util/gen/genJwt";
 
 export const verify = new Elysia().post(
   "/verify",
-  async ({ body: { code, email }, cookie: { accessToken } }) => {
+  async ({
+    body: { code, email },
+    headers: { authorization },
+    cookie: { accessToken },
+  }) => {
     // validator
     const user = await prisma.author.findUnique({
       where: {
@@ -35,12 +39,16 @@ export const verify = new Elysia().post(
     // handle success and fail
     if (user.verification?.code === code) {
       if (isExpires(user.verification.expiredAt)) {
-        return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Code was expired" });
+        return ReturnData({
+          status: ResponseStatus["UNAUTHORIZED"],
+          message: "Code was expired",
+        });
       }
 
       const token = getJWT({ email, password: user.password });
 
       accessToken.value = token;
+      authorization = `Bearer ${token}`
 
       const updateUser = await prisma.author.update({
         where: {
@@ -76,7 +84,10 @@ export const verify = new Elysia().post(
         data: updateUser,
       });
     } else {
-      return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Wrong code" });
+      return ReturnData({
+        status: ResponseStatus["UNAUTHORIZED"],
+        message: "Wrong code",
+      });
     }
   },
   {
@@ -84,8 +95,11 @@ export const verify = new Elysia().post(
       code: t.String(),
       email: t.String(),
     }),
+    headers: t.Object({
+      authorization: t.String()
+    }),
     cookie: t.Cookie({
       accessToken: t.String(),
     }),
   }
-)
+);

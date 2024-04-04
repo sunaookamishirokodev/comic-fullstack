@@ -3,7 +3,7 @@ import prisma from "../../../db";
 import ReturnData from "../../../util/format/return";
 import { ResponseStatus } from "../../../typings/endpoints";
 import validator from "validator";
-import bcrypt from "bcrypt";
+import * as argon2 from "argon2";
 import IsValidToken from "../../../util/check/checkToken";
 
 export const changepassword = new Elysia().post(
@@ -37,7 +37,7 @@ export const changepassword = new Elysia().post(
       return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Invalid Token" });
     }
 
-    const encryptPassword = await bcrypt.hash(newPassword, 10);
+    const encryptPassword = await argon2.hash(newPassword);
 
     const updateUser = await prisma.author.update({
       where: {
