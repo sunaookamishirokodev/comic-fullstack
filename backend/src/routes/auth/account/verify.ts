@@ -3,7 +3,7 @@ import ReturnData from "../../../util/format/return";
 import { ResponseStatus } from "../../../typings/endpoints";
 import prisma from "../../../db";
 import setExpires from "../../../util/set/setExpires";
-import IsNotExpired from "../../../util/check/checkExpires";
+import isExpires from "../../../util/check/checkExpires";
 import getJWT from "../../../util/gen/genJwt";
 
 export const verify = new Elysia().post(
@@ -34,7 +34,7 @@ export const verify = new Elysia().post(
 
     // handle success and fail
     if (user.verification?.code === code) {
-      if (!IsNotExpired(user.verification.expiredAt)) {
+      if (isExpires(user.verification.expiredAt)) {
         return ReturnData({ status: ResponseStatus["UNAUTHORIZED"], message: "Code was expired" });
       }
 
